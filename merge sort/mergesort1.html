@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Merge Sort Visualization</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+        }
+
+        h1 {
+            color: #4a4a4a;
+            font-size: 36px;
+            margin-top: 20px;
+        }
+
+        .instructions {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .array-container {
+            display: flex;
+            align-items: flex-end;
+            margin-top: 20px;
+            height: 300px;
+            width: 80%;
+            border: 1px solid #ccc;
+            position: relative;
+            background-color: #fff;
+        }
+
+        .bar {
+            flex: 1;
+            margin: 0 2px;
+            background-color: #74b9ff;
+            transition: height 0.5s ease, background-color 0.5s ease;
+            position: relative;
+        }
+
+        .bar.highlight {
+            background-color: #ff6b81;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        #sort-button, #reset-button, #generate-button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        #sort-button:hover, #reset-button:hover, #generate-button:hover {
+            background-color: #357ABD;
+        }
+
+        .merge-info {
+            margin-top: 20px;
+            width: 80%;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .progress {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Merge Sort Visualization</h1>
+    <div class="instructions">Click "Generate New Array" to create a random array of numbers. Then, click "Start Merge Sort" to see how the merge sort algorithm works step by step!</div>
+    <div class="array-container" id="array-container"></div>
+    <div id="controls">
+        <button id="generate-button">Generate New Array</button>
+        <button id="sort-button">Start Merge Sort</button>
+        <button id="reset-button">Reset</button>
+    </div>
+    <div class="merge-info" id="merge-info"></div>
+    <div class="progress" id="progress"></div>
+    <div class="message" id="message"></div>
+
+    <script>
+        const arrayContainer = document.getElementById('array-container');
+        const sortButton = document.getElementById('sort-button');
+        const resetButton = document.getElementById('reset-button');
+        const generateButton = document.getElementById('generate-button');
+        const mergeInfo = document.getElementById('merge-info');
+        const message = document.getElementById('message');
+        const progress = document.getElementById('progress');
+
+        let array = [];
+        let steps = [];
+        let animationDelay = 1000; // 1 second delay for each step
+        let currentStep = 0;
+        let animationInterval;
+
+        // Function to generate a random array
+        function generateRandomArray(size = 10) {
+            array = Array.from({ length: size }, () => Math.floor(Math.random() * 100));
+            displayArray(array);
+            mergeInfo.innerHTML = '';
+            message.innerHTML = 'Array generated. Click "Start Merge Sort" to visualize.';
+            progress.innerHTML = '';
+        }
+
+        // Function to display the array as bars
+        function displayArray(arr) {
+            arrayContainer.innerHTML = '';
+            arr.forEach(value => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${value * 3}px`; // Scale bar height
+                bar.textContent = value;
+                arrayContainer.appendChild(bar);
+            });
+        }
+
+        // Merge Sort function
+        function mergeSort(arr) {
+            if (arr.length <= 1) return arr;
+
+            const mid = Math.floor(arr.length / 2);
+            const left = mergeSort(arr.slice(0, mid));
+            const right = mergeSort(arr.slice(mid));
+
+            return merge(left, right);
+        }
+
+        // Merge function
+        function merge(left, right) {
+            let result = [];
+            let leftIndex = 0;
+            let rightIndex = 0;
+
+            // Display the current merging operation
+            steps.push({ result: [], left: left.slice(), right: right.slice() });
+
+            while (leftIndex < left.length && rightIndex < right.length) {
+                steps.push({ result: [...result], left: left.slice(), right: right.slice() });
+                if (left[leftIndex] < right[rightIndex]) {
+                    result.push(left[leftIndex]);
+                    leftIndex++;
+                } else {
+                    result.push(right[rightIndex]);
+                    rightIndex++;
+                }
+            }
+
+            // Concatenate remaining elements
+            while (leftIndex < left.length) {
+                result.push(left[leftIndex]);
+                leftIndex++;
+            }
+            while (rightIndex < right.length) {
+                result.push(right[rightIndex]);
+                rightIndex++;
+            }
+
+            steps.push({ result: result }); // Record the merged result
+            return result;
+        }
+
+        // Function to visualize each step
+        function visualizeStep(step) {
+            const bars = document.querySelectorAll('.bar');
+            const currentArray = step.result.length > 0 ? step.result : [];
+
+            // Update the display
+            displayArray(currentArray);
+
+            // Highlight the current elements being compared
+            if (step.left && step.right) {
+                const leftValue = step.left[0];
+                const rightValue = step.right[0];
+                const leftBar = [...bars].find(bar => bar.textContent == leftValue);
+                const rightBar = [...bars].find(bar => bar.textContent == rightValue);
+
+                if (leftBar) leftBar.classList.add('highlight');
+                if (rightBar) rightBar.classList.add('highlight');
+
+                // Clear highlights after a short time
+                setTimeout(() => {
+                    if (leftBar) leftBar.classList.remove('highlight');
+                    if (rightBar) rightBar.classList.remove('highlight');
+                }, animationDelay / 2);
+            }
+
+            message.innerHTML = `Current Array: [${currentArray.join(', ')}]`;
+            progress.innerHTML = `Current Step: ${steps.indexOf(step) + 1} of ${steps.length}`;
+        }
+
+        // Start the animation
+        function startAnimation() {
+            currentStep = 0;
+            animationInterval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    visualizeStep(steps[currentStep]);
+                    currentStep++;
+                } else {
+                    clearInterval(animationInterval);
+                    message.innerHTML = 'Merge Sort Completed!';
+                    progress.innerHTML = '';
+                }
+            }, animationDelay);
+        }
+
+        // Event listeners for buttons
+        sortButton.addEventListener('click', () => {
+            if (array.length === 0) {
+                message.innerHTML = 'Please generate an array first!';
+                return;
+            }
+            steps = [];
+            mergeSort(array);
+            startAnimation();
+        });
+
+        resetButton.addEventListener('click', () => {
+            clearInterval(animationInterval);
+            generateRandomArray(10);
+            message.innerHTML = 'Array reset. Click "Start Merge Sort" to visualize.';
+            progress.innerHTML = '';
+        });
+
+        generateButton.addEventListener('click', () => {
+            generateRandomArray(10);
+        });
+
+        // Generate initial array
+        generateRandomArray(10);
+    </script>
+</body>
+</html>

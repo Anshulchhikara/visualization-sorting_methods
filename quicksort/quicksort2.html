@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Visualization with Horizontal Indexed Data Table</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #4a4a4a;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .array-container {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .array-item {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            border-radius: 5px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background-color: #eee;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .array-item.pivot {
+            background-color: #f9d423;
+            color: white;
+            font-weight: bold;
+        }
+
+        #next-step-button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        #next-step-button:hover {
+            background-color: #357ABD;
+        }
+
+        #new-array-button {
+            background-color: #e94e77;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        #new-array-button:hover {
+            background-color: #d84315;
+        }
+
+        .table-container {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table th, .table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .table th {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .index-table {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            width: 100%;
+            border-collapse: collapse;
+            display: table;
+        }
+
+        .index-table th, .index-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .index-table th {
+            background-color: #d1c4e9;
+        }
+
+        #completion-message {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #4caf50;
+            font-weight: bold;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quick Sort Visualization</h1>
+        <div class="array-container" id="array-container"></div>
+        <button id="new-array-button">Generate New Array</button>
+        <button id="next-step-button" disabled>Next Step</button>
+        <div class="table-container" id="table-container"></div>
+        <div id="completion-message">Sorting Completed!</div> <!-- Completion Message -->
+    </div>
+
+    <script>
+        const arrayContainer = document.getElementById('array-container');
+        const nextStepButton = document.getElementById('next-step-button');
+        const newArrayButton = document.getElementById('new-array-button');
+        const tableContainer = document.getElementById('table-container');
+        const completionMessage = document.getElementById('completion-message'); // Completion Message Element
+
+        let array = [];
+        let steps = [];
+        let currentStep = 0;
+
+        // Function to generate a random array of numbers
+        function generateRandomArray(size = 6, max = 10) {
+            array = Array.from({ length: size }, () => Math.floor(Math.random() * max) + 1);
+            steps = []; // Reset steps for new array
+            currentStep = 0; // Reset current step
+            visualizeArray(array); // Display the new array
+            nextStepButton.disabled = false; // Enable next step button
+            tableContainer.innerHTML = ''; // Clear previous tables
+            completionMessage.style.display = 'none'; // Hide completion message
+            quicksort(array, 0, array.length - 1); // Start quicksort
+        }
+
+        function quicksort(arr, low, high) {
+            if (low < high) {
+                let pivotIndex = partition(arr, low, high);
+                steps.push({
+                    arrayState: [...arr],
+                    pivotIndex: pivotIndex,
+                    pivotValue: arr[pivotIndex],
+                    leftSide: arr.slice(low, pivotIndex),
+                    rightSide: arr.slice(pivotIndex + 1, high + 1),
+                });
+                quicksort(arr, low, pivotIndex - 1);
+                quicksort(arr, pivotIndex + 1, high);
+            }
+        }
+
+        function partition(arr, low, high) {
+            let pivot = arr[low];
+            let i = low + 1;
+            let j = high;
+
+            while (i <= j) {
+                while (i <= j && arr[i] <= pivot) {
+                    i++;
+                }
+                while (i <= j && arr[j] > pivot) {
+                    j--;
+                }
+                if (i < j) {
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            }
+            [arr[low], arr[j]] = [arr[j], arr[low]];
+            return j;
+        }
+
+        function visualizeArray(arr) {
+            arrayContainer.innerHTML = '';
+            arr.forEach((value) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'array-item';
+                itemDiv.textContent = value;
+                arrayContainer.appendChild(itemDiv);
+            });
+        }
+
+        function visualizeStep(step) {
+            visualizeArray(step.arrayState);
+            arrayContainer.childNodes.forEach((itemDiv, index) => {
+                itemDiv.className = 'array-item' + (index === step.pivotIndex ? ' pivot' : '');
+            });
+
+            // Display the partitioning details in a new table
+            displayTable(step.arrayState, step.leftSide, step.pivotValue, step.rightSide);
+            displayHorizontalIndexedTable(step.arrayState);
+        }
+
+        function displayTable(arr, leftSide, pivotValue, rightSide) {
+            const table = document.createElement('table');
+            table.className = 'table';
+            const headerRow = document.createElement('tr');
+
+            // Create header for left side, pivot, and right side
+            const leftHeader = document.createElement('th');
+            leftHeader.textContent = 'Left Side';
+            headerRow.appendChild(leftHeader);
+
+            const pivotHeader = document.createElement('th');
+            pivotHeader.textContent = 'Pivot';
+            headerRow.appendChild(pivotHeader);
+
+            const rightHeader = document.createElement('th');
+            rightHeader.textContent = 'Right Side';
+            headerRow.appendChild(rightHeader);
+
+            table.appendChild(headerRow);
+
+            // Create data row for left side, pivot, and right side
+            const dataRow = document.createElement('tr');
+
+            const leftData = document.createElement('td');
+            leftData.textContent = leftSide.join(', ') || 'Empty';
+            dataRow.appendChild(leftData);
+
+            const pivotData = document.createElement('td');
+            pivotData.textContent = pivotValue;
+            dataRow.appendChild(pivotData);
+
+            const rightData = document.createElement('td');
+            rightData.textContent = rightSide.join(', ') || 'Empty';
+            dataRow.appendChild(rightData);
+
+            table.appendChild(dataRow);
+            tableContainer.appendChild(table); // Append new table
+        }
+
+        function displayHorizontalIndexedTable(arr) {
+            const indexTable = document.createElement('table');
+            indexTable.className = 'index-table';
+
+            // Create header row
+            const headerRow = document.createElement('tr');
+
+            // Create index headers
+            arr.forEach((_, index) => {
+                const indexHeader = document.createElement('th');
+                indexHeader.textContent = `Index ${index}`;
+                headerRow.appendChild(indexHeader);
+            });
+            indexTable.appendChild(headerRow);
+
+            // Create data row for values
+            const dataRow = document.createElement('tr');
+            arr.forEach(value => {
+                const valueCell = document.createElement('td');
+                valueCell.textContent = value;
+                dataRow.appendChild(valueCell);
+            });
+            indexTable.appendChild(dataRow);
+
+            tableContainer.appendChild(indexTable); // Append index table
+        }
+
+        nextStepButton.addEventListener('click', () => {
+            if (currentStep < steps.length) {
+                visualizeStep(steps[currentStep]);
+                currentStep++;
+            }
+            if (currentStep === steps.length) {
+                completionMessage.style.display = 'block'; // Show completion message
+                nextStepButton.disabled = true; // Disable next step button
+            }
+        });
+
+        newArrayButton.addEventListener('click', () => {
+            generateRandomArray();
+        });
+
+        // Initialize with a random array
+        generateRandomArray();
+    </script>
+</body>
+</html>

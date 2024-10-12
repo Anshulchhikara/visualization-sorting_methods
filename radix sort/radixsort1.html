@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radix Sort Visualization</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            height: 100vh;
+            color: #333;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 36px;
+        }
+
+        .instructions {
+            margin: 10px 0;
+            font-size: 18px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .array-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .element {
+            padding: 15px;
+            background-color: #74b9ff;
+            border-radius: 5px;
+            width: 60px;
+            text-align: center;
+            font-weight: bold;
+            transition: background-color 0.5s;
+        }
+
+        .element.highlight {
+            background-color: #ff6b81;
+        }
+
+        .element.sorted {
+            background-color: #55efc4;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        #generate-button, #next-step-button, #reset-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+
+        #generate-button:hover, #next-step-button:hover, #reset-button:hover {
+            background-color: #357ABD;
+        }
+
+        .step-info {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .history-table {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 10px;
+            width: 80%; /* Set the table width to occupy 80% of its parent */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners */
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2; /* Add alternating row colors */
+        }
+
+        tr:hover {
+            background-color: #e0e0e0; /* Highlight row on hover */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            table {
+                width: 100%; /* Full width on smaller screens */
+            }
+
+            #generate-button, #next-step-button, #reset-button {
+                font-size: 16px; /* Smaller button size */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Radix Sort Visualization</h1>
+    <div class="instructions">Click "Generate New Array" to create a random array of numbers. Then, click "Next Step" to visualize each stage of the Radix Sort algorithm!</div>
+    <div class="array-container" id="array-container"></div>
+    <div id="controls">
+        <button id="generate-button">Generate New Array</button>
+        <button id="next-step-button" disabled>Next Step</button>
+        <button id="reset-button">Reset</button>
+    </div>
+    <div class="step-info" id="step-info"></div>
+    <div class="message" id="message"></div>
+    <div class="history-table" id="history-table">
+        <h2>Sorting History</h2>
+        <table id="table"></table>
+    </div>
+    <script>
+        const arrayContainer = document.getElementById('array-container');
+        const nextStepButton = document.getElementById('next-step-button');
+        const resetButton = document.getElementById('reset-button');
+        const generateButton = document.getElementById('generate-button');
+        const stepInfo = document.getElementById('step-info');
+        const message = document.getElementById('message');
+        const table = document.getElementById('table');
+
+        let array = [];
+        let steps = [];
+        let currentStep = 0;
+
+        // Function to generate a random array
+        function generateRandomArray(size = 10) {
+            array = Array.from({ length: size }, () => Math.floor(Math.random() * 100));
+            displayArray(array);
+            message.innerHTML = 'Array generated. Checking if sorted...';
+            stepInfo.innerHTML = '';
+            nextStepButton.disabled = true; // Disable Next Step button until sorting is done
+            currentStep = 0; // Reset step counter
+            steps = []; // Clear previous steps
+            table.innerHTML = ''; // Clear history table
+
+            if (isSorted(array)) {
+                message.innerHTML += ' The array is already sorted!';
+                nextStepButton.disabled = false; // Enable Next Step button if already sorted
+            } else {
+                message.innerHTML += ' The array is not sorted. Sorting now...';
+                radixSort(array); // Sort the array automatically
+                nextStepButton.disabled = false; // Enable Next Step button after sorting
+                message.innerHTML += ' Click "Next Step" to visualize the sorting process.';
+            }
+        }
+
+        // Function to display the array
+        function displayArray(arr) {
+            arrayContainer.innerHTML = '';
+            arr.forEach(value => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                arrayContainer.appendChild(element);
+            });
+        }
+
+        // Function to check if the array is sorted
+        function isSorted(arr) {
+            for (let i = 1; i < arr.length; i++) {
+                if (arr[i] < arr[i - 1]) return false; // If any element is smaller than the previous one, return false
+            }
+            return true; // Array is sorted
+        }
+
+        // Counting sort based on the current digit
+        function countingSort(arr, exp) {
+            const n = arr.length;
+            const output = new Array(n); // Output array
+            const count = new Array(10).fill(0); // Initialize count array
+
+            // Store count of occurrences
+            for (let i = 0; i < n; i++) {
+                count[Math.floor((arr[i] / exp) % 10)]++;
+            }
+
+            // Change count[i] so that it contains the actual position of this digit in output[]
+            for (let i = 1; i < 10; i++) {
+                count[i] += count[i - 1];
+            }
+
+            // Build the output array
+            for (let i = n - 1; i >= 0; i--) {
+                output[count[Math.floor((arr[i] / exp) % 10)] - 1] = arr[i];
+                count[Math.floor((arr[i] / exp) % 10)]--;
+            }
+
+            // Copy the output array to arr[]
+            for (let i = 0; i < n; i++) {
+                arr[i] = output[i];
+            }
+        }
+
+        // Function to perform Radix Sort
+        function radixSort(arr) {
+            const max = Math.max(...arr); // Get the maximum number to determine the number of digits
+            let exp = 1; // Initialize exponent (place value)
+
+            // Perform counting sort for each digit
+            while (Math.floor(max / exp) > 0) {
+                countingSort(arr, exp); // Perform counting sort on the current digit
+                steps.push([...arr]); // Save the state after sorting
+                exp *= 10; // Move to the next place value
+            }
+        }
+
+        // Function to highlight sorted elements
+        function highlightSortedElements(stepIndex) {
+            const elements = document.querySelectorAll('.element');
+            elements.forEach((element, index) => {
+                element.classList.remove('highlight', 'sorted');
+                if (index < stepIndex) {
+                    element.classList.add('sorted');
+                }
+            });
+            if (stepIndex < elements.length) {
+                elements[stepIndex].classList.add('highlight');
+            }
+        }
+
+        // Function to show the next step
+        function showNextStep() {
+            if (currentStep < steps.length) {
+                displayArray(steps[currentStep]); // Display current state
+                highlightSortedElements(currentStep); // Highlight sorted elements
+
+                // Add current array state to the history table
+                addToHistoryTable(steps[currentStep]);
+
+                // Determine the place value being sorted
+                const placeValue = Math.pow(10, currentStep); // 1, 10, 100, ...
+                const placeValueName = placeValue === 1 ? 'ones' : placeValue === 10 ? 'tens' : placeValue === 100 ? 'hundreds' : 'higher';
+                stepInfo.innerHTML = `Step ${currentStep + 1}: Sorting by ${placeValueName} place digit`;
+                currentStep++;
+            } else {
+                message.innerHTML = 'Radix Sort Completed!';
+                nextStepButton.disabled = true; // Disable button after completion
+            }
+        }
+
+        // Function to add current state to the history table
+        function addToHistoryTable(arr) {
+            const row = document.createElement('tr');
+            arr.forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            table.appendChild(row);
+        }
+
+        // Event listeners for buttons
+        nextStepButton.addEventListener('click', showNextStep);
+        resetButton.addEventListener('click', () => {
+            generateRandomArray(10);
+            message.innerHTML = 'Array reset. Click "Next Step" to visualize.';
+            stepInfo.innerHTML = '';
+        });
+        generateButton.addEventListener('click', () => {
+            generateRandomArray(10);
+        });
+
+        // Initial array generation
+        generateRandomArray(10);
+    </script>
+</body>
+</html>

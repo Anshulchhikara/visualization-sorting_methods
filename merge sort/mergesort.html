@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Algorithm</title>
+    <link rel="stylesheet" href="mergesort.css">
+</head>
+<body>
+    <header>
+        <h1>Merge Sort Algorithm</h1>
+    </header>
+    <section class="algorithm-explanation">
+        <h2>How It Works:</h2>
+        <p>The Merge Sort algorithm is a divide-and-conquer algorithm that sorts an array by dividing it into smaller subarrays, sorting those subarrays, and then merging them back together.</p>
+        <ul>
+            <li>Divide the unsorted array into two halves.</li>
+            <li>Recursively sort each half.</li>
+            <li>Merge the two sorted halves into a single sorted array.</li>
+        </ul>
+    </section>
+    <section class="code-example">
+        <h2>C++ Implementation:</h2>
+        <pre>
+            <code>
+#include &lt;iostream&gt;
+using namespace std;
+
+void merge(int arr[], int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    int* L = new int[n1];
+    int* R = new int[n2];
+
+    for (int i = 0; i &lt; n1; i++)
+        L[i] = arr[left + i];
+    for (int j = 0; j &lt; n2; j++)
+        R[j] = arr[mid + 1 + j];
+
+    int i = 0;
+    int j = 0;
+    int k = left;
+
+    while (i &lt; n1 && j &lt; n2) {
+        if (L[i] &lt;= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i &lt; n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j &lt; n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+
+    delete[] L;
+    delete[] R;
+}
+
+void mergeSort(int arr[], int left, int right) {
+    if (left &lt; right) {
+        int mid = left + (right - left) / 2;
+
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid + 1, right);
+        merge(arr, left, mid, right);
+    }
+}
+
+void printArray(int arr[], int size) {
+    for (int i = 0; i &lt; size; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; " ";
+    cout &lt;&lt; endl;
+}
+
+int main() {
+    int arr[] = {38, 27, 43, 3, 9, 82, 10};
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    mergeSort(arr, 0, n - 1);
+    cout &lt;&lt; "Sorted array: \n";
+    printArray(arr, n);
+
+    return 0;
+}
+            </code>
+        </pre>
+    </section>
+    <section class="visualization">
+        <h2>Visualization:</h2>
+        <a class="visualization-link" href="mergesort1.html" target="_blank">View MergeSort Visualization</a>
+    </section>
+</body>
+</html>

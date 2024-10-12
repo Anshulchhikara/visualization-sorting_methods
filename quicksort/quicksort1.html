@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Quick Sort Visualization</title>
+<style>
+body {
+  font-family: sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.array {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.array-item {
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  text-align: center;
+  background-color: #eee;
+}
+
+.pivot {
+  background-color: #f0f000;
+}
+
+.sorted {
+  background-color: #00c853;
+}
+
+.highlight {
+  background-color: #ff0000;
+}
+
+.steps {
+  margin-bottom: 20px;
+}
+
+.step {
+  margin-bottom: 10px;
+}
+
+.step-title {
+  font-weight: bold;
+}
+
+.step-description {
+  margin-top: 5px;
+}
+
+.step-array {
+  display: flex;
+  margin-top: 10px;
+}
+
+.step-array-item {
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  text-align: center;
+  background-color: #eee;
+}
+
+.step-pivot {
+  background-color: #f0f000;
+}
+
+.step-sorted {
+  background-color: #00c853;
+}
+
+.step-highlight {
+  background-color : #ff0000;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Quick Sort Visualization</h1>
+  <div class="array" id="array"></div>
+  <div class="steps" id="steps"></div>
+  <button id="sort-button">Sort</button>
+</div>
+
+<script>
+const arrayContainer = document.getElementById('array');
+const stepsContainer = document.getElementById('steps');
+const sortButton = document.getElementById('sort-button');
+
+let array = [8, 40, 3,11, 9, 21, 5];
+let steps = [];
+
+function quicksort(arr, low, high) {
+  if (low < high) {
+    let pivotIndex = partition(arr, low, high);
+    steps.push({
+      title: `Partitioning around pivot ${arr[pivotIndex]}`,
+      description: `Pivot: ${arr[pivotIndex]}, Left: ${arr.slice(low, pivotIndex)}, Right: ${arr.slice(pivotIndex + 1, high + 1)}`,
+      array: [...arr],
+      pivot: pivotIndex,
+    });
+    quicksort(arr, low, pivotIndex - 1);
+    quicksort(arr, pivotIndex + 1, high);
+  }
+}
+
+function partition(arr, low, high) {
+  let pivot = arr[low];
+  let i = low + 1;
+  let j = high;
+
+  while (i <= j) {
+    while (i <= j && arr[i] <= pivot) {
+      i++;
+    }
+    while (i <= j && arr[j] > pivot) {
+      j--;
+    }
+    if (i <= j) {
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+  [arr[low], arr[j]] = [arr[j], arr[low]];
+  return j;
+}
+
+function visualizeStep(step) {
+  const stepElement = document.createElement('div');
+  stepElement.className = 'step';
+  const stepTitleElement = document.createElement('div');
+  stepTitleElement.className = 'step-title';
+  stepTitleElement.textContent = step.title;
+  const stepDescriptionElement = document.createElement('div');
+  stepDescriptionElement.className = 'step-description';
+  stepDescriptionElement.textContent = step.description;
+  const stepArrayElement = document.createElement('div');
+  stepArrayElement.className = 'step-array';
+  step.array.forEach((value, index) => {
+    const arrayItemElement = document.createElement('div');
+    arrayItemElement.className = 'step-array-item';
+    if (index === step.pivot) {
+      arrayItemElement.className += ' step-pivot';
+    } else if (index < step.pivot) {
+      arrayItemElement.className += ' step-highlight';
+    }
+    arrayItemElement.textContent = value;
+    stepArrayElement.appendChild(arrayItemElement);
+  });
+  stepElement.appendChild(stepTitleElement);
+  stepElement.appendChild(stepDescriptionElement);
+  stepElement.appendChild(stepArrayElement);
+  stepsContainer.appendChild(stepElement);
+}
+
+sortButton.addEventListener('click', () => {
+  arrayContainer.innerHTML = '';
+  stepsContainer.innerHTML = '';
+  steps = [];
+  array.forEach((value) => {
+    const arrayItemElement = document.createElement('div');
+    arrayItemElement.className = 'array-item';
+    arrayItemElement.textContent = value;
+    arrayContainer.appendChild(arrayItemElement);
+  });
+  quicksort(array, 0, array.length - 1);
+  steps.forEach((step) => visualizeStep(step));
+});
+</script>
+</body>
+</html>

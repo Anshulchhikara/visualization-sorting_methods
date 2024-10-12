@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radix Sort Algorithm</title>
+    <link rel="stylesheet" href="radixsort.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #007acc;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-bottom: 4px solid #005fa3;
+        }
+
+        .algorithm-explanation {
+            margin: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .algorithm-explanation h2 {
+            margin-top: 0;
+            color: #007acc;
+        }
+
+        .algorithm-explanation ul {
+            padding-left: 20px;
+        }
+
+        .code-example {
+            background-color: #f7f7f7;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        .code-example pre {
+            overflow: auto;
+            padding: 10px;
+            background-color: #e8e8e8;
+            border-radius: 5px;
+            border-left: 5px solid #007acc;
+        }
+
+        .visualization {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .visualization-link {
+            background-color: #007acc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .visualization-link:hover {
+            background-color: #005fa3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Radix Sort Algorithm</h1>
+    </header>
+    <section class="algorithm-explanation">
+        <h2>How It Works:</h2>
+        <p>The Radix Sort algorithm sorts numbers by processing individual digits. It sorts the input numbers in multiple passes, starting from the least significant digit to the most significant digit.</p>
+        <ul>
+            <li>Find the maximum number to know the number of digits.</li>
+            <li>For each digit, use a stable sorting algorithm (like Counting Sort) to sort the numbers based on that digit.</li>
+            <li>Repeat for each digit until all digits are processed.</li>
+        </ul>
+    </section>
+    <section class="code-example">
+        <h2>C++ Implementation:</h2>
+        <pre>
+            <code>
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+void countingSort(vector<int>& arr, int exp) {
+    int n = arr.size();
+    vector<int> output(n);
+    int count[10] = {0};
+
+    for (int i = 0; i < n; i++)
+        count[(arr[i] / exp) % 10]++;
+
+    for (int i = 1; i < 10; i++)
+        count[i] += count[i - 1];
+
+    for (int i = n - 1; i >= 0; i--) {
+        output[count[(arr[i] / exp) % 10] - 1] = arr[i];
+        count[(arr[i] / exp) % 10]--;
+    }
+
+    for (int i = 0; i < n; i++)
+        arr[i] = output[i];
+}
+
+void radixSort(vector<int>& arr) {
+    int maxVal = *max_element(arr.begin(), arr.end());
+
+    for (int exp = 1; maxVal / exp > 0; exp *= 10)
+        countingSort(arr, exp);
+}
+
+void printArray(const vector<int>& arr) {
+    for (int num : arr)
+        cout &lt;&lt; num &lt;&lt; " ";
+    cout &lt;&lt; endl;
+}
+
+int main() {
+    vector<int> arr = {170, 45, 75, 90, 802, 24, 2, 66};
+
+    radixSort(arr);
+    cout &lt;&lt; "Sorted array: \n";
+    printArray(arr);
+
+    return 0;
+}
+            </code>
+        </pre>
+    </section>
+    <section class="visualization">
+        <h2>Visualization:</h2>
+        <a class="visualization-link" href="radixsort1.html" target="_blank">View Radix Sort Visualization</a>
+    </section>
+</body>
+</html>

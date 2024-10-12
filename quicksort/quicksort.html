@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Algorithm</title>
+    <link rel="stylesheet" href="quicksort.css">
+</head>
+<body>
+    <header>
+        <h1>Quick Sort Algorithm</h1>
+    </header>
+    <section class="algorithm-explanation">
+        <h2>How It Works:</h2>
+        <p>The Quick Sort algorithm is a divide-and-conquer algorithm that sorts an array of elements by selecting a pivot element, partitioning the array around the pivot, and recursively sorting the subarrays.</p>
+        <ul>
+            <li>Choose a pivot element from the array.</li>
+            <li>Partition the array around the pivot element.</li>
+            <li>Recursively sort the subarrays before and after the pivot element.</li>
+        </ul>
+    </section>
+    <section class="code-example">
+        <h2>C++ Implementation:</h2>
+        <pre>
+            <code>
+#include &lt;iostream&gt;
+using namespace std;
+
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+
+    for (int j = low; j &lt;= high - 1; j++) {
+        if (arr[j] &lt; pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return (i + 1);
+}
+
+void quickSort(int arr[], int low, int high) {
+    if (low &lt; high) {
+        int pivot = partition(arr, low, high);
+
+        quickSort(arr, low, pivot - 1);
+        quickSort(arr, pivot + 1, high);
+    }
+}
+
+void printArray(int arr[], int size) {
+    for (int i = 0; i &lt; size; i++)
+        cout &lt;&lt; arr[i] &lt;&lt; " ";
+    cout &lt;&lt; endl;
+}
+
+int main() {
+    int arr[] = { 10, 7, 8, 9, 1, 5 };
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    quickSort(arr, 0, n - 1);
+    cout &lt;&lt; "Sorted array: \n";
+    printArray(arr, n);
+
+    return 0;
+}
+            </code>
+        </pre>
+    </section>
+    <section class="visualization">
+        <h2>Visualization:</h2>
+        <a class="visualization-link" href="quicksort2.html" target="_blank">View QuickSort Visualization</a>
+    </section>
+</body>
+</html>
