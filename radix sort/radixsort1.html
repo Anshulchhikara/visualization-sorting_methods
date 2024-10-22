@@ -59,7 +59,7 @@
             margin-top: 20px;
         }
 
-        #generate-button, #next-step-button, #reset-button {
+        #generate-button, #next-step-button, #reset-button, #upload-button {
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -71,7 +71,7 @@
             transition: background-color 0.3s;
         }
 
-        #generate-button:hover, #next-step-button:hover, #reset-button:hover {
+        #generate-button:hover, #next-step-button:hover, #reset-button:hover, #upload-button:hover {
             background-color: #357ABD;
         }
 
@@ -130,7 +130,7 @@
                 width: 100%; /* Full width on smaller screens */
             }
 
-            #generate-button, #next-step-button, #reset-button {
+            #generate-button, #next-step-button, #reset-button, #upload-button {
                 font-size: 16px; /* Smaller button size */
             }
         }
@@ -138,11 +138,13 @@
 </head>
 <body>
     <h1>Radix Sort Visualization</h1>
-    <div class="instructions">Click "Generate New Array" to create a random array of numbers. Then, click "Next Step" to visualize each stage of the Radix Sort algorithm!</div>
+    <div class="instructions">Click "Generate New Array" to create a random array of numbers, or upload your own array. Then, click "Next Step" to visualize each stage of the Radix Sort algorithm!</div>
     <div class="array-container" id="array-container"></div>
     <div id="controls">
         <button id="generate-button">Generate New Array</button>
-        <button id="next-step-button" disabled>Next Step</button>
+        <input type="text" id="array-input" placeholder="Enter your array (e.g., 5,3,8,6)" style="margin-left: 10px; padding: 10px; font-size: 16px; width: 300px;">
+        <button id="upload-button">Upload Array</button>
+        <button id="next-step-button" disabled>Start Radix Sort</button>
         <button id="reset-button">Reset</button>
     </div>
     <div class="step-info" id="step-info"></div>
@@ -156,6 +158,8 @@
         const nextStepButton = document.getElementById('next-step-button');
         const resetButton = document.getElementById('reset-button');
         const generateButton = document.getElementById('generate-button');
+        const uploadButton = document.getElementById('upload-button');
+        const arrayInput = document.getElementById('array-input');
         const stepInfo = document.getElementById('step-info');
         const message = document.getElementById('message');
         const table = document.getElementById('table');
@@ -168,142 +172,141 @@
         function generateRandomArray(size = 10) {
             array = Array.from({ length: size }, () => Math.floor(Math.random() * 100));
             displayArray(array);
+            resetState();
             message.innerHTML = 'Array generated. Checking if sorted...';
-            stepInfo.innerHTML = '';
-            nextStepButton.disabled = true; // Disable Next Step button until sorting is done
-            currentStep = 0; // Reset step counter
-            steps = []; // Clear previous steps
-            table.innerHTML = ''; // Clear history table
-
             if (isSorted(array)) {
                 message.innerHTML += ' The array is already sorted!';
                 nextStepButton.disabled = false; // Enable Next Step button if already sorted
             } else {
-                message.innerHTML += ' The array is not sorted. Sorting now...';
-                radixSort(array); // Sort the array automatically
-                nextStepButton.disabled = false; // Enable Next Step button after sorting
+                radixSort(array);
+                nextStepButton.disabled = false;
                 message.innerHTML += ' Click "Next Step" to visualize the sorting process.';
             }
+        }
+
+        // Function to upload a custom array
+        function uploadArray() {
+            const inputArray = arrayInput.value.split(',').map(Number);
+            if (inputArray.every(Number.isFinite)) {
+                array = inputArray;
+                displayArray(array);
+                resetState();
+                message.innerHTML = 'Custom array uploaded. Checking if sorted...';
+                if (isSorted(array)) {
+                    message.innerHTML += ' The array is already sorted!';
+                    nextStepButton.disabled = false;
+                } else {
+                    radixSort(array);
+                    nextStepButton.disabled = false;
+                    message.innerHTML += ' Click "Next Step" to visualize the sorting process.';
+                }
+            } else {
+                message.innerHTML = 'Invalid input. Please enter a valid array of numbers separated by commas.';
+            }
+        }
+
+        // Function to reset sorting state
+        function resetState() {
+            stepInfo.innerHTML = '';
+            nextStepButton.disabled = true;
+            currentStep = 0;
+            steps = [];
+            table.innerHTML = '';
         }
 
         // Function to display the array
         function displayArray(arr) {
             arrayContainer.innerHTML = '';
-            arr.forEach(value => {
+            arr.forEach((num) => {
                 const element = document.createElement('div');
                 element.className = 'element';
-                element.textContent = value;
+                element.textContent = num;
                 arrayContainer.appendChild(element);
             });
         }
 
-        // Function to check if the array is sorted
-        function isSorted(arr) {
-            for (let i = 1; i < arr.length; i++) {
-                if (arr[i] < arr[i - 1]) return false; // If any element is smaller than the previous one, return false
-            }
-            return true; // Array is sorted
+        // Function to add sorting steps to the table
+        function addStepToTable(stepNumber, stepArray) {
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.innerHTML = `Step ${stepNumber + 1}`;
+            cell2.innerHTML = stepArray.join(', ');
         }
 
-        // Counting sort based on the current digit
-        function countingSort(arr, exp) {
-            const n = arr.length;
-            const output = new Array(n); // Output array
-            const count = new Array(10).fill(0); // Initialize count array
-
-            // Store count of occurrences
-            for (let i = 0; i < n; i++) {
-                count[Math.floor((arr[i] / exp) % 10)]++;
+        // Function to check if the array is already sorted
+        function isSorted(arr) {
+            for (let i = 0; i < arr.length - 1; i++) {
+                if (arr[i] > arr[i + 1]) return false;
             }
-
-            // Change count[i] so that it contains the actual position of this digit in output[]
-            for (let i = 1; i < 10; i++) {
-                count[i] += count[i - 1];
-            }
-
-            // Build the output array
-            for (let i = n - 1; i >= 0; i--) {
-                output[count[Math.floor((arr[i] / exp) % 10)] - 1] = arr[i];
-                count[Math.floor((arr[i] / exp) % 10)]--;
-            }
-
-            // Copy the output array to arr[]
-            for (let i = 0; i < n; i++) {
-                arr[i] = output[i];
-            }
+            return true;
         }
 
         // Function to perform Radix Sort
         function radixSort(arr) {
-            const max = Math.max(...arr); // Get the maximum number to determine the number of digits
-            let exp = 1; // Initialize exponent (place value)
+            steps = []; // Clear previous steps
+            const max = Math.max(...arr);
+            let exp = 1; // Start with the least significant digit (ones)
+            let digitPlace = "ones"; // Initialize with 'ones'
 
-            // Perform counting sort for each digit
             while (Math.floor(max / exp) > 0) {
-                countingSort(arr, exp); // Perform counting sort on the current digit
-                steps.push([...arr]); // Save the state after sorting
-                exp *= 10; // Move to the next place value
-            }
-        }
+                const count = Array(10).fill(0);
 
-        // Function to highlight sorted elements
-        function highlightSortedElements(stepIndex) {
-            const elements = document.querySelectorAll('.element');
-            elements.forEach((element, index) => {
-                element.classList.remove('highlight', 'sorted');
-                if (index < stepIndex) {
-                    element.classList.add('sorted');
+                // Count occurrences of each digit
+                for (let i = 0; i < arr.length; i++) {
+                    count[Math.floor(arr[i] / exp) % 10]++;
                 }
-            });
-            if (stepIndex < elements.length) {
-                elements[stepIndex].classList.add('highlight');
+
+                // Modify count array for cumulative sum
+                for (let i = 1; i < 10; i++) {
+                    count[i] += count[i - 1];
+                }
+
+                // Create output array
+                const output = Array(arr.length).fill(0);
+
+                // Build the output array using the count array
+                for (let i = arr.length - 1; i >= 0; i--) {
+                    output[--count[Math.floor(arr[i] / exp) % 10]] = arr[i];
+                }
+
+                // Copy the sorted elements to the original array
+                for (let i = 0; i < arr.length; i++) {
+                    arr[i] = output[i];
+                }
+
+                // Add step info (show what place is being sorted)
+                steps.push([...arr]);
+                stepInfo.innerHTML = `Sorting by the ${digitPlace} place: ${arr.join(', ')}`;
+
+                // Move to the next digit place (ones -> tens -> hundreds...)
+                exp *= 10;
+                digitPlace = exp === 10 ? "tens" : exp === 100 ? "hundreds" : "next higher place"; // Adjust the place
             }
         }
 
-        // Function to show the next step
-        function showNextStep() {
+        // Function to display the next step of sorting
+        function nextStep() {
             if (currentStep < steps.length) {
-                displayArray(steps[currentStep]); // Display current state
-                highlightSortedElements(currentStep); // Highlight sorted elements
+                displayArray(steps[currentStep]);
 
-                // Add current array state to the history table
-                addToHistoryTable(steps[currentStep]);
+                let place = currentStep === 0 ? 'ones' : currentStep === 1 ? 'tens' : 'next higher place';
+                stepInfo.innerHTML = `Step ${currentStep + 1} (Sorting by ${place} digit): ${steps[currentStep].join(', ')}`;
 
-                // Determine the place value being sorted
-                const placeValue = Math.pow(10, currentStep); // 1, 10, 100, ...
-                const placeValueName = placeValue === 1 ? 'ones' : placeValue === 10 ? 'tens' : placeValue === 100 ? 'hundreds' : 'higher';
-                stepInfo.innerHTML = `Step ${currentStep + 1}: Sorting by ${placeValueName} place digit`;
+                addStepToTable(currentStep, steps[currentStep]);
                 currentStep++;
             } else {
-                message.innerHTML = 'Radix Sort Completed!';
-                nextStepButton.disabled = true; // Disable button after completion
+                nextStepButton.disabled = true;
+                message.innerHTML = 'Sorting complete!';
             }
         }
 
-        // Function to add current state to the history table
-        function addToHistoryTable(arr) {
-            const row = document.createElement('tr');
-            arr.forEach(value => {
-                const cell = document.createElement('td');
-                cell.textContent = value;
-                row.appendChild(cell);
-            });
-            table.appendChild(row);
-        }
+        // Event listeners
+        generateButton.addEventListener('click', () => generateRandomArray());
+        uploadButton.addEventListener('click', () => uploadArray());
+        nextStepButton.addEventListener('click', nextStep);
+        resetButton.addEventListener('click', resetState);
 
-        // Event listeners for buttons
-        nextStepButton.addEventListener('click', showNextStep);
-        resetButton.addEventListener('click', () => {
-            generateRandomArray(10);
-            message.innerHTML = 'Array reset. Click "Next Step" to visualize.';
-            stepInfo.innerHTML = '';
-        });
-        generateButton.addEventListener('click', () => {
-            generateRandomArray(10);
-        });
-
-        // Initial array generation
-        generateRandomArray(10);
     </script>
 </body>
 </html>
