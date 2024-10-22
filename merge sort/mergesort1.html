@@ -57,7 +57,7 @@
             margin-top: 20px;
         }
 
-        #sort-button, #reset-button, #generate-button {
+        #sort-button, #reset-button, #generate-button, #upload-button {
             padding: 15px 25px;
             border: none;
             border-radius: 5px;
@@ -69,8 +69,18 @@
             transition: background-color 0.3s ease;
         }
 
-        #sort-button:hover, #reset-button:hover, #generate-button:hover {
+        #sort-button:hover, #reset-button:hover, #generate-button:hover, #upload-button:hover {
             background-color: #357ABD;
+        }
+
+        #array-input {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 18px;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            text-align: center;
         }
 
         .merge-info {
@@ -96,12 +106,14 @@
 </head>
 <body>
     <h1>Interactive Merge Sort Visualization</h1>
-    <div class="instructions">Click "Generate New Array" to create a random array of numbers. Then, click "Start Merge Sort" to see how the merge sort algorithm works step by step!</div>
+    <div class="instructions">Click "Generate New Array" to create a random array of numbers, or input your own array below. Then, click "Start Merge Sort" to see how the merge sort algorithm works step by step!</div>
     <div class="array-container" id="array-container"></div>
     <div id="controls">
         <button id="generate-button">Generate New Array</button>
         <button id="sort-button">Start Merge Sort</button>
         <button id="reset-button">Reset</button>
+        <input type="text" id="array-input" placeholder="Enter your array (e.g., 5,3,8,6)">
+        <button id="upload-button">Upload Array</button>
     </div>
     <div class="merge-info" id="merge-info"></div>
     <div class="progress" id="progress"></div>
@@ -112,6 +124,8 @@
         const sortButton = document.getElementById('sort-button');
         const resetButton = document.getElementById('reset-button');
         const generateButton = document.getElementById('generate-button');
+        const uploadButton = document.getElementById('upload-button');
+        const arrayInput = document.getElementById('array-input');
         const mergeInfo = document.getElementById('merge-info');
         const message = document.getElementById('message');
         const progress = document.getElementById('progress');
@@ -232,10 +246,22 @@
             }, animationDelay);
         }
 
+        // Function to handle custom array input
+        function handleUploadArray() {
+            const inputArray = arrayInput.value.split(',').map(Number);
+            if (inputArray.every(Number.isFinite)) {
+                array = inputArray;
+                displayArray(array);
+                message.innerHTML = 'Custom array uploaded. Click "Start Merge Sort" to visualize.';
+            } else {
+                message.innerHTML = 'Invalid input. Please enter a valid array of numbers.';
+            }
+        }
+
         // Event listeners for buttons
         sortButton.addEventListener('click', () => {
             if (array.length === 0) {
-                message.innerHTML = 'Please generate an array first!';
+                message.innerHTML = 'Please generate an array or upload your own!';
                 return;
             }
             steps = [];
@@ -253,6 +279,8 @@
         generateButton.addEventListener('click', () => {
             generateRandomArray(10);
         });
+
+        uploadButton.addEventListener('click', handleUploadArray);
 
         // Generate initial array
         generateRandomArray(10);
